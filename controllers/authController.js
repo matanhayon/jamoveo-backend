@@ -18,6 +18,9 @@ async function signup(req, res) {
       role,
       instrument,
     });
+    console.log(
+      `New user registered: ${username}, Role: ${role}, Instrument: ${instrument}`
+    );
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     console.error(error);
