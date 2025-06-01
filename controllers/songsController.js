@@ -1,30 +1,6 @@
 const { ObjectId } = require("mongodb");
 const { getCollections } = require("../config/db");
 
-// Get Song by ID
-async function getSongById(req, res) {
-  console.log("Fetching song by ID:", req.query.id); // <--- log the ID being fetched
-  const { songsCollection } = getCollections();
-  const { id } = req.query; // <--- use query here
-
-  if (!ObjectId.isValid(id)) {
-    return res.status(400).json({ message: "Invalid song ID" });
-  }
-
-  try {
-    const song = await songsCollection.findOne({ _id: new ObjectId(id) });
-
-    if (!song) {
-      return res.status(404).json({ message: "Song not found" });
-    }
-
-    res.status(200).json(song);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to fetch song" });
-  }
-}
-
 // Get all songs
 async function getSongs(req, res) {
   const { songsCollection } = getCollections();
@@ -38,21 +14,22 @@ async function getSongs(req, res) {
   }
 }
 
-// Search songs by name (case-insensitive)
 async function searchSongsByName(req, res) {
   const { songsCollection } = getCollections();
   const query = req.query.name;
 
-  if (!query || typeof query !== "string" || !query.trim()) {
-    return res.status(400).json({ message: "Missing or invalid search query" });
-  }
-
   try {
+    // If query is missing, empty, or 'all', return all songs
+    if (!query || query.trim() === "" || query.toLowerCase() === "all") {
+      const allSongs = await songsCollection.find().toArray();
+      return res.status(200).json(allSongs);
+    }
+
+    // Otherwise search by name
     const regex = new RegExp(query, "i");
     const results = await songsCollection
       .find({ name: { $regex: regex } })
       .toArray();
-
     res.status(200).json(results);
   } catch (error) {
     console.error(error);
@@ -101,4 +78,4 @@ async function addSong(req, res) {
   }
 }
 
-module.exports = { getSongs, addSong, searchSongsByName, getSongById };
+module.exports = { getSongs, addSong, searchSongsByName };
