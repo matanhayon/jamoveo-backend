@@ -47,22 +47,13 @@ function setupSocket(server) {
     });
 
     socket.on("quitSession", () => {
-      if (socket.id === adminSocketId) {
-        currentLiveSong = null;
-        io.to(sessionId).emit("sessionEnded");
-      } else {
-      }
+      currentLiveSong = null;
+      io.to(sessionId).emit("sessionEnded");
     });
 
     socket.on("adminScrollUpdate", ({ scrollTop }) => {
       if (socket.id === adminSocketId) {
         socket.to(sessionId).emit("updateScrollPosition", { scrollTop });
-      }
-    });
-
-    socket.on("disconnect", () => {
-      if (socket.id === adminSocketId) {
-        adminSocketId = null;
       }
     });
   });
